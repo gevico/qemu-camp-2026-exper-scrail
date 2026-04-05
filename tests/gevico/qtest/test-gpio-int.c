@@ -119,6 +119,7 @@ static void test_gpio_ie_mask(void)
     qtest_quit(qts);
 }
 
+<<<<<<< HEAD
 /*
  * GPIO interrupt should appear on PLIC IRQ 2.
  *
@@ -126,15 +127,21 @@ static void test_gpio_ie_mask(void)
  * clear it. Software clears pending by reading the claim register and then
  * writing the same IRQ number back as completion.
  */
+=======
+/* GPIO interrupt should appear on PLIC IRQ 2 */
+>>>>>>> 1bfa00e4 (Initial commit)
 static void test_gpio_plic(void)
 {
     QTestState *qts = qtest_init("-machine g233 -m 2G");
 
+<<<<<<< HEAD
     /* PLIC init: enable IRQ 2 at context 0 with non-zero priority */
     qtest_writel(qts, PLIC_PRIORITY + GPIO_PLIC_IRQ * 4, 1);
     qtest_writel(qts, PLIC_THRESHOLD, 0);
     qtest_writel(qts, PLIC_ENABLE, 1u << GPIO_PLIC_IRQ);
 
+=======
+>>>>>>> 1bfa00e4 (Initial commit)
     qtest_writel(qts, GPIO_DIR,  0x1);
     qtest_writel(qts, GPIO_TRIG, 0x0);
     qtest_writel(qts, GPIO_POL,  0x1);
@@ -145,6 +152,7 @@ static void test_gpio_plic(void)
 
     g_assert_true(plic_irq_pending(qts, GPIO_PLIC_IRQ));
 
+<<<<<<< HEAD
     /* Clear the GPIO-side interrupt status first */
     qtest_writel(qts, GPIO_IS, 0x1);
 
@@ -157,6 +165,10 @@ static void test_gpio_plic(void)
     qtest_writel(qts, PLIC_CLAIM, GPIO_PLIC_IRQ);
 
     /* Pending bit must now be cleared */
+=======
+    /* Clear and verify PLIC pending clears */
+    qtest_writel(qts, GPIO_IS, 0x1);
+>>>>>>> 1bfa00e4 (Initial commit)
     g_assert_false(plic_irq_pending(qts, GPIO_PLIC_IRQ));
 
     qtest_quit(qts);
