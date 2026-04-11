@@ -3399,6 +3399,21 @@ static const TypeInfo riscv_cpu_type_infos[] = {
     DEFINE_PROFILE_CPU(TYPE_RISCV_CPU_RVA22S64,  TYPE_RISCV_CPU_RV64I,  RVA22S64),
     DEFINE_PROFILE_CPU(TYPE_RISCV_CPU_RVA23U64,  TYPE_RISCV_CPU_RV64I,  RVA23U64),
     DEFINE_PROFILE_CPU(TYPE_RISCV_CPU_RVA23S64,  TYPE_RISCV_CPU_RV64I,  RVA23S64),
+    
+    DEFINE_RISCV_CPU(TYPE_RISCV_CPU_G233, TYPE_RISCV_CPU, 
+        .misa_mxl_max = MXL_RV64,
+        .misa_ext = RVI | RVM | RVA | RVC | RVU,
+        .priv_spec = PRIV_VERSION_1_12_0,
+        .vext_spec = VEXT_VERSION_1_00_0,
+        .cfg.ext_zicsr = true, /* 启用 CSR 指令 */
+        .cfg.ext_zifencei = true, /* 启用指令栅栏 */
+        .cfg.mmu = true, /* 支持内存管理单元 */
+        .cfg.pmp = true, /* 支持物理内存保护 */
+        .cfg.max_satp_mode = VM_1_10_SV39 /* 默认最高支持 Sv39 虚拟内存方案 */
+        /* 可根据需要启用更多扩展，例如： */
+        /* .cfg.ext_zba = true, */
+        /* .cfg.ext_zbb = true, */
+    ),
 #endif /* TARGET_RISCV64 */
 };
 
