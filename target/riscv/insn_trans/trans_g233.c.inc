@@ -34,16 +34,35 @@ static bool trans_expand (DisasContext *ctx, arg_expand *a) {
     return true;
 }
 
+<<<<<<< HEAD
 static bool trans_vdot (DisasContext *ctx, arg_vdot *a) {
     TCGv a_addr = get_gpr(ctx, a->rs1, EXT_NONE);
     TCGv b_addr = get_gpr(ctx, a->rs2, EXT_NONE);
     TCGv dest = dest_gpr(ctx, a->rd);
     gen_helper_vdot(dest, tcg_env, a_addr, b_addr);
     gen_set_gpr(ctx, a->rd, dest);
+=======
+static bool trans_gemm (DisasContext *ctx, arg_gemm *a) {
+    return true;
+}
+
+
+
+static bool trans_vadd (DisasContext *ctx, arg_vadd *a) {
+    return true;
+}
+
+
+
+
+
+static bool trans_vdot (DisasContext *ctx, arg_vdot *a) {
+>>>>>>> a031fc3c (feat:dma sort crush expand)
     return true;
 }
 
 static bool trans_vrelu (DisasContext *ctx, arg_vrelu *a) {
+<<<<<<< HEAD
     TCGv src_addr = get_gpr(ctx, a->rs1, EXT_NONE);
     TCGv N = get_gpr(ctx, a->rs2, EXT_NONE);
     TCGv dst_addr = get_gpr(ctx, a->rd, EXT_NONE);
@@ -96,5 +115,15 @@ static bool trans_vadd (DisasContext *ctx, arg_vadd *a) {
     TCGv b_addr = get_gpr(ctx, a->rs2, EXT_NONE);
     TCGv dst_addr = get_gpr(ctx, a->rd, EXT_NONE);
     gen_helper_vadd(tcg_env, dst_addr, a_addr, b_addr);
+=======
+    return true;
+}
+
+static bool trans_vscale (DisasContext *ctx, arg_vscale *a) {
+    return true;
+}
+
+static bool trans_vmax (DisasContext *ctx, arg_vmax *a) {
+>>>>>>> a031fc3c (feat:dma sort crush expand)
     return true;
 }
