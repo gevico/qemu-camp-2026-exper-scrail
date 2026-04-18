@@ -1,4 +1,5 @@
 /* Exceptions */
+#include "exec/helper-head.h.inc"
 DEF_HELPER_2(raise_exception, noreturn, env, i32)
 
 /* Floating Point - rounding mode */
@@ -1289,3 +1290,9 @@ DEF_HELPER_4(vsm4r_vs, void, ptr, ptr, env, i32)
 #ifndef CONFIG_USER_ONLY
 DEF_HELPER_1(ssamoswap_disabled, void, env)
 #endif
+
+/* G233 ISA */
+DEF_HELPER_4(dma, void, env, tl, tl, tl)
+DEF_HELPER_3(sort, void, env, tl, tl)
+DEF_HELPER_4(crush, void, env, tl, tl, tl)
+DEF_HELPER_4(expand, void, env, tl, tl, tl)

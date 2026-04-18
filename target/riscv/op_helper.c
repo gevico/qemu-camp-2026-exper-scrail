@@ -781,3 +781,92 @@ done:
 }
 
 #endif /* !CONFIG_USER_ONLY */
+
+void helper_dma(CPURISCVState *env, target_ulong rd, target_ulong rs1, target_ulong rs2 ) {
+    /*
+    N = gpr[rs2]
+    src = mem[gpr[rs1]]
+    dst = mem[gpr[rd]]
+    N = {8, 16, 32}[gpr[rs2]]
+    for i in 0..N-1:
+        for j in 0..N-1:
+            dst[j * N + i] = src[i * N + j] 
+    */ 
+    int N = (8 << env->gpr[rs2]);
+    target_ulong src_addr = env->gpr[rs1];
+    target_ulong dst_addr = env->gpr[rd];
+    for (int i = 0; i < N ; i++) {
+        for (int j = 0; j < N; j++) {
+            target_ulong src_ptr = src_addr + (i * N + j) * 4;
+            target_ulong dst_ptr = dst_addr + (j * N + i) * 4;
+            uint32_t val = cpu_ldl_data(env, src_ptr);
+            cpu_stl_data(env, dst_ptr, val);
+        }
+    
+    }
+}
+
+void helper_sort(CPURISCVState *env, target_ulong A_base, target_ulong K) {
+    /*
+    A = mem at gpr[rs1]                           // INT32 array
+    N = gpr[rs2]                                  // total elements (upper bound)
+    K = gpr[rd]                                   // elements to sort
+    for i in 0..K-2:
+        for j in 0..K-i-2:
+            if A[j] > A[j+1]:
+                swap(A[j], A[j+1])
+    */
+    if (K < 2) 
+        return;
+    for (int i = 0; i < K - 1; i++) {
+        for (int j = 0; j < K - 1 - i; j++) {
+            uint32_t aj = cpu_ldl_data_ra(env, A_base + j * 4, GETPC());
+            uint32_t aj1 = cpu_ldl_data_ra(env, A_base + (j + 1) * 4, GETPC());
+            if (aj > aj1) {
+                cpu_stl_data_ra(env, A_base + (j + 1) * 4,aj, GETPC());
+                cpu_stl_data_ra(env, A_base + j * 4,aj1, GETPC());
+            }
+        }
+    }
+}
+
+void helper_crush(CPURISCVState *env, target_ulong dst_addr, target_ulong src_addr, target_ulong n) {
+    /*
+    src = mem at gpr[rs1]                         // UINT8 array, N elements
+    dst = mem at gpr[rd]                          // UINT8 array, ceil(N/2) elements
+    for i in 0..N/2-1:
+        dst[i]  = src[2*i] & 0x0F
+        dst[i] |= (src[2*i + 1] & 0x0F) << 4
+    */
+    int out_len = (n + 1) / 2;
+    for (int i = 0; i < n / 2; i++) {
+        uint8_t v1 = cpu_ldub_data_ra(env, src_addr + (2 * i), GETPC());
+        uint8_t v2 = cpu_ldub_data_ra(env, src_addr + (2 * i + 1), GETPC());
+        v1 = v1 & 0x0F;
+        v1 |= (v2 & 0x0F) << 4;
+        cpu_stb_data_ra(env, dst_addr + i, v1, GETPC());
+    }
+    if (n & 1) {
+        uint8_t v1 = cpu_ldub_data_ra(env, src_addr + (n - 1), GETPC());
+        v1 = v1 & 0x0F;
+        cpu_stb_data_ra(env, dst_addr + out_len - 1, v1, GETPC());
+    }
+}
+
+void helper_expand(CPURISCVState *env, target_ulong dst_addr, target_ulong src_addr, target_ulong n) {
+    /*
+    src = mem at gpr[rs1]                         // UINT8 array, N elements
+    dst = mem at gpr[rd]                          // UINT8 array, 2*N elements
+    for i in 0..N-1:
+        dst[2*i]     = src[i] & 0x0F
+        dst[2*i + 1] = (src[i] >> 4) & 0x0F
+    */
+    for (int i = 0; i < n ; i++) {
+        uint8_t v_all = cpu_ldub_data_ra(env, src_addr + (i), GETPC());
+        uint8_t v1 = v_all & 0x0F;
+        uint8_t v2 = (v_all >> 4) & 0x0F;
+
+        cpu_stb_data_ra(env, dst_addr + (2 * i), v1, GETPC());
+        cpu_stb_data_ra(env, dst_addr + (2 * i + 1), v2, GETPC());
+    }
+}
