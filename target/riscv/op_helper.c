@@ -870,3 +870,98 @@ void helper_expand(CPURISCVState *env, target_ulong dst_addr, target_ulong src_a
         cpu_stb_data_ra(env, dst_addr + (2 * i + 1), v2, GETPC());
     }
 }
+
+target_ulong helper_vdot(CPURISCVState *env, target_ulong a_addr, target_ulong b_addr) {
+    int64_t acc = 0;
+    for (int i = 0; i < 16; i++) {
+        int32_t va = cpu_ldl_data_ra(env, a_addr + (i * 4), GETPC());
+        int32_t vb = cpu_ldl_data_ra(env, b_addr + (i * 4), GETPC());
+        acc += (int64_t)va * (int64_t)vb;
+    }
+    return (target_ulong) acc;
+}
+
+void helper_vrelu(CPURISCVState *env, target_ulong dst_addr, target_ulong src_addr, target_ulong n) {
+    for (int i = 0; i < n; i++) {
+        int32_t val = cpu_ldl_data_ra(env, src_addr + (i * 4),GETPC());
+        val = (val > 0) ? val : 0;
+        cpu_stl_data_ra(env, dst_addr + (i * 4), val, GETPC());
+    }
+}
+
+void helper_vscale(CPURISCVState *env, target_ulong dst_addr, target_ulong src_addr, target_ulong scale) {
+    /*
+    src   = mem at gpr[rs1]                       // INT32 array
+    dst   = mem at gpr[rd]                        // INT32 array
+    scale = gpr[rs2]                              // scalar multiplier
+    N     = 16                                    // fixed vector length
+    for i in 0..N-1:
+        dst[i] = (INT32)((INT64)src[i] * scale)   // multiply, truncate to 32-bit
+    */
+    for (int i = 0; i < 16; i++) {
+        int32_t val = cpu_ldl_data_ra(env, src_addr + (i * 4),GETPC());
+        val = (int32_t)((int64_t)val * scale);
+        cpu_stl_data_ra(env, dst_addr + (i * 4), val, GETPC());
+    }
+}
+
+target_ulong helper_vmax(CPURISCVState *env, target_ulong src_addr, target_ulong n) {
+    /*
+    A   = mem at gpr[rs1]                         // INT32 array
+    N   = gpr[rs2]
+    max = A[0]
+    for i in 1..N-1:
+        if A[i] > max:
+            max = A[i]
+    gpr[rd] = sign_extend(max, 32)                // sign-extend to XLEN
+    */
+    int32_t max = cpu_ldl_data_ra(env, src_addr,GETPC());
+    for (int i = 1; i < n; i++) {
+        int32_t val = cpu_ldl_data_ra(env, src_addr + (i * 4),GETPC());
+        if (val > max) {
+            max = val;
+        }
+    }
+    return (target_ulong) max;
+}
+
+void helper_gemm(CPURISCVState *env, target_ulong dst_addr, target_ulong a_addr, target_ulong b_addr) {
+    /*
+    A = mem at gpr[rs1]                           // INT32[4][4], row-major
+    B = mem at gpr[rs2]                           // INT32[4][4], row-major
+    C = mem at gpr[rd]                            // INT32[4][4], row-major
+    for i in 0..3:
+        for j in 0..3:
+            acc = 0                               // INT64 accumulator
+            for k in 0..3:
+                acc += (INT64)A[i][k] * (INT64)B[k][j]
+            C[i][j] = (INT32)acc
+    */
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            int32_t acc = 0;
+            for (int k = 0; k < 4; k++) {
+                int32_t aik = cpu_ldl_data_ra(env, a_addr + (i*4 + k) * 4, GETPC());
+                int32_t bkj = cpu_ldl_data_ra(env, b_addr + (k*4 + j) * 4, GETPC());
+                acc += (int64_t)aik * (int64_t)bkj;
+            }
+            cpu_stl_data_ra(env, dst_addr + (i*4 + j) * 4, acc, GETPC());
+        }
+    }
+}
+
+void helper_vadd(CPURISCVState *env, target_ulong dst_addr, target_ulong a_addr, target_ulong b_addr) {
+    /*
+    A = mem at gpr[rs1]                           // INT32[16]
+    B = mem at gpr[rs2]                           // INT32[16]
+    C = mem at gpr[rd]                            // INT32[16]
+    for i in 0..15:
+        C[i] = A[i] + B[i]                       // INT32 wrapping add
+    */
+    for (int i = 0; i < 16; i++) {
+        int32_t ai = cpu_ldl_data_ra(env, a_addr + (i * 4), GETPC());
+        int32_t bi = cpu_ldl_data_ra(env, b_addr + (i * 4), GETPC());
+        int32_t val = ai + bi;
+        cpu_stl_data_ra(env, dst_addr + (i * 4), val, GETPC());
+    }
+}
