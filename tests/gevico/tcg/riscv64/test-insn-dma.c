@@ -13,12 +13,14 @@ static float dst_sw[MAX_N * MAX_N];
 
 static inline void custom_dma(float *dst, const float *src, long grain)
 {
+    // for (int i = 0; i < 1000000000; i++) {
     asm volatile(
         ".insn r 0x7b, 6, 6, %0, %1, %2"
         :
         : "r"(dst), "r"(src), "r"(grain)
         : "memory"
     );
+    // }
 }
 
 static void software_transpose(float *dst, const float *src, int n)

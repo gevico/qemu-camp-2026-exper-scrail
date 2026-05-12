@@ -1,4 +1,6 @@
 #include "tcg/tcg.h"
+// #define CONFIG_GEVICO_VEC
+
 static bool trans_dma(DisasContext *ctx, arg_dma *a) {
     gen_helper_dma(tcg_env, tcg_constant_tl(a->rd), tcg_constant_tl(a->rs1),tcg_constant_tl(a->rs2));
     return true;
@@ -48,7 +50,7 @@ static bool trans_vrelu (DisasContext *ctx, arg_vrelu *a) {
     gen_helper_vrelu(tcg_env, dst_addr, src_addr, N);
     return true;
 }
-
+#ifndef CONFIG_GEVICO_VEC
 static bool trans_vscale (DisasContext *ctx, arg_vscale *a) {
     TCGv src_addr = get_gpr(ctx, a->rs1, EXT_NONE);
     TCGv scale = get_gpr(ctx, a->rs2, EXT_NONE);
@@ -56,7 +58,22 @@ static bool trans_vscale (DisasContext *ctx, arg_vscale *a) {
     gen_helper_vscale(tcg_env, dst_addr, src_addr, scale);
     return true;
 }
-
+#else
+static bool trans_vscale(DisasContext *ctx, arg_vscale *a)
+{
+    TCGv src_base = get_gpr(ctx, a->rs1, EXT_NONE);
+    TCGv dst_base = get_gpr(ctx, a->rd, EXT_NONE);
+    TCGv scale = get_gpr(ctx, a->rs2, EXT_NONE);
+    TCGv_i64 scale_i64 = tcg_temp_new_i64();
+    tcg_gen_extu_tl_i64(scale_i64, scale);
+    // ld from src_base to env->?1
+    tcg_gen_gvec_muls(MO_32, vreg_ofs(ctx, a->rd), vreg_ofs(ctx, a->rs1), scale_i64, MAXSZ(ctx), MAXSZ(ctx));
+    //st from env->?2 ti dst_base
+    // 3. 处理结尾清理和状态更新
+    finalize_rvv_inst(ctx);
+    return true;
+}
+#endif
 static bool trans_vmax (DisasContext *ctx, arg_vmax *a) {
     TCGv src_addr = get_gpr(ctx, a->rs1, EXT_NONE);
     TCGv N = get_gpr(ctx, a->rs2, EXT_NONE);

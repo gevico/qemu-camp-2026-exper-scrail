@@ -141,6 +141,7 @@ OBJECT_DECLARE_SIMPLE_TYPE(GPGPUState, GPGPU)
 #define GPGPU_ERR_VRAM_FAULT        (1 << 1)    /* 显存访问越界 */
 #define GPGPU_ERR_KERNEL_FAULT      (1 << 2)    /* 内核执行错误 */
 #define GPGPU_ERR_DMA_FAULT         (1 << 3)    /* DMA 传输错误 */
+#define GPGPU_ERR_MASK              (0xF)
 
 /* IRQ 位定义 */
 #define GPGPU_IRQ_KERNEL_DONE       (1 << 0)    /* 内核执行完成中断 */
@@ -152,6 +153,7 @@ OBJECT_DECLARE_SIMPLE_TYPE(GPGPUState, GPGPU)
 #define GPGPU_DMA_DIR_TO_VRAM       (0 << 1)    /* 方向: 主机 -> 显存 */
 #define GPGPU_DMA_DIR_FROM_VRAM     (1 << 1)    /* 方向: 显存 -> 主机 */
 #define GPGPU_DMA_IRQ_ENABLE        (1 << 2)    /* 完成时产生中断 */
+#define GPGPU_DMA_DIR_MASK          (1 << 1)    /* Mask */
 
 /* DMA_STATUS 寄存器位 */
 #define GPGPU_DMA_BUSY              (1 << 0)    /* DMA 忙 */

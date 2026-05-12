@@ -58,6 +58,14 @@ typedef struct GPGPUState GPGPUState;
 #define MHARTID_WARP(id)        (((id) >> 5) & 0xFF)
 #define MHARTID_BLOCK(id)       ((id) >> 13)
 
+
+#define FRM(val) (((val) >> 5) & 0x7)
+#define FFLAGS(val) ((val) & 0x1F)
+
+#define FRM_UPDATE(fcsr, val) \
+    (fcsr) = ((fcsr) & ~(0x7 << 5)) | (((val) & 0x7) << 5)
+#define FFLAGS_UPDATE(fcsr, val) \
+    (fcsr) = ((fcsr) & ~0x1F) | ((val) & 0x1F)
 /*
  * ============================================================================
  * Lane 状态结构
@@ -108,6 +116,23 @@ typedef struct GPGPUWarp {
 #define GPGPU_CORE_CTRL_GRID_DIM_Y  (GPGPU_CORE_CTRL_BASE + 0x34)
 #define GPGPU_CORE_CTRL_GRID_DIM_Z  (GPGPU_CORE_CTRL_BASE + 0x38)
 
+#define GPGPU_CORE_MAX_CYCLES 100000
+/* 
+ * 3D 线性化迭代宏
+ * _i: 循环索引变量名
+ * _x, _y, _z: 自动生成的 3D 坐标变量名
+ * _dim: 包含三个维度的数组 (如 s->kernel.grid_dim)
+ */
+#define FOR_EACH_3D(_i, _x, _y, _z, _dim) \
+    for (uint32_t _i = 0, \
+         _total = (_dim)[0] * (_dim)[1] * (_dim)[2]; \
+         _i < _total; _i++) \
+        for (uint32_t _z = _i / ((_dim)[0] * (_dim)[1]), \
+                      _tmp = _i % ((_dim)[0] * (_dim)[1]), \
+                      _y = _tmp / (_dim)[0], \
+                      _x = _tmp % (_dim)[0], \
+                      _once = 1; \
+             _once; _once = 0)
 /*
  * ============================================================================
  * 执行引擎 API

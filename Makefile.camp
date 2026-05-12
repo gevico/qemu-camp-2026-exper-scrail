@@ -23,11 +23,13 @@ CROSS_PREFIX ?= riscv64-unknown-elf-
 #   riscv64-linux-user : CPU TCG user-mode tests
 #   --enable-rust      : Rust experiment unit tests
 #   --cross-prefix     : bare-metal cross compiler for TCG testcases
+
+# DEV_CONFIG		   : 在开发过程中抑制未使用报错（更改设置需要重新configure）
 CONFIGURE_FLAGS := \
     --target-list=riscv64-softmmu,riscv64-linux-user \
-    --extra-cflags='-O0 -g3' \
+    --extra-cflags='-O0 -g3 $(DEV_CONFIG)' \
     --cross-prefix-riscv64=$(CROSS_PREFIX) \
-    --enable-rust
+    --enable-rust --enable-debug
 
 # Parallel jobs (default: nproc)
 NPROC := $(shell nproc 2>/dev/null || echo 4)
