@@ -28,3 +28,9 @@ my_script/
 mytcg-test/
 Makefile.camp
 mytest_tcg/
+.clangd
+.codex
+CLAUDE.md
+my_script/
+mytcg-test/
+Makefile.camp

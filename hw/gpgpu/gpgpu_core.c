@@ -58,7 +58,6 @@ int gpgpu_core_exec_warp(GPGPUState *s, GPGPUWarp *warp, uint32_t max_cycles)
             if (((1 << i) & warp->active_mask) == 0) {
                 continue;
             }
-            isa_fetch_decode(&d);
             
             // TODO: simt同步数值检查，考虑切换vram读取源，避免缓存不一致
             s->simt.warp_id = warp->warp_id;
@@ -69,6 +68,8 @@ int gpgpu_core_exec_warp(GPGPUState *s, GPGPUWarp *warp, uint32_t max_cycles)
             s->simt.thread_id[2] = tid / (s->kernel.block_dim[0] * s->kernel.block_dim[1]);
 
             d.lane = &warp->lanes[i];
+            
+            isa_fetch_decode(&d);
             d.lane->pc += 4;
             d.EHelper(&d);
         }

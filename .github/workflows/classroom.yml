@@ -104,11 +104,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
-<<<<<<< HEAD
           submodules: false
-=======
-          submodules: recursive
->>>>>>> 1bfa00e4 (Initial commit)
 
       - name: Install dependencies
         run: |
@@ -185,11 +181,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
-<<<<<<< HEAD
           submodules: false
-=======
-          submodules: recursive
->>>>>>> 1bfa00e4 (Initial commit)
 
       - name: Install dependencies
         run: |
@@ -264,11 +256,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
-<<<<<<< HEAD
           submodules: false
-=======
-          submodules: recursive
->>>>>>> 1bfa00e4 (Initial commit)
 
       - name: Install dependencies
         run: |
